@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.application_routes import router as application_router
+from app.api.auth_routes import router as auth_router
 from app.config.settings import settings
 from app.database.database import Base, engine
 from app.models import Application, User
@@ -35,6 +36,7 @@ def create_app() -> FastAPI:
         return {"status": "healthy"}
 
     app.include_router(application_router)
+    app.include_router(auth_router)
 
     return app
 
