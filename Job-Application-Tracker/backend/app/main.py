@@ -1,9 +1,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.api.application_routes import router as application_router
 from app.config.settings import settings
-from app.database.database import Base, engine, get_db
-from app.models.application import Application
+from app.database.database import Base, engine
 
 
 def create_app() -> FastAPI:
@@ -32,6 +32,8 @@ def create_app() -> FastAPI:
     @app.get("/health")
     def health_check() -> dict[str, str]:
         return {"status": "healthy"}
+
+    app.include_router(application_router)
 
     return app
 
