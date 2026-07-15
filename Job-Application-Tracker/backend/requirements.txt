@@ -4,7 +4,7 @@ sqlalchemy
 alembic
 pydantic
 pydantic-settings
-python-jose
+python-jose[cryptography]
 passlib[bcrypt]
 bcrypt<5
 python-dotenv

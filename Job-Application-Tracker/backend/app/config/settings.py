@@ -18,8 +18,9 @@ class Settings(BaseSettings):
     APP_VERSION: str = "0.1.0"
     API_PREFIX: str = "/api"
     DEBUG: bool = False
-    SECRET_KEY: str = "change-me"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    SECRET_KEY: str = Field(default_factory=lambda: "change-me")
+    ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
     DATABASE_URL: str = "sqlite:///./job_tracker.db"
     BACKEND_CORS_ORIGINS: list[str] = Field(default_factory=lambda: ["http://localhost:3000"])
 
