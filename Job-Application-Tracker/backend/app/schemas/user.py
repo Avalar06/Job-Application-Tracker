@@ -37,6 +37,16 @@ class UserCreate(UserBase):
         raise ValueError("password must be a string")
 
 
+class UserLogin(BaseModel):
+    email: EmailStr
+    password: str = Field(..., min_length=1, max_length=255)
+
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+
+
 class UserResponse(UserBase):
     id: int
     created_at: datetime
