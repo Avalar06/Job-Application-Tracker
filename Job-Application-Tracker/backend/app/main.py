@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.application_routes import router as application_router
 from app.config.settings import settings
 from app.database.database import Base, engine
+from app.models import Application, User
 
 
 def create_app() -> FastAPI:

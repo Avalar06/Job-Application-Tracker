@@ -6,10 +6,14 @@ from app.schemas.application import (
     ApplicationResponse,
     ApplicationUpdate,
 )
+from app.schemas.user import UserBase, UserCreate, UserResponse
 
 __all__ = [
     "ApplicationBase",
     "ApplicationCreate",
     "ApplicationResponse",
     "ApplicationUpdate",
+    "UserBase",
+    "UserCreate",
+    "UserResponse",
 ]
