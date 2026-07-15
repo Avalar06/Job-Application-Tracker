@@ -5,6 +5,7 @@ import DashboardPage from './pages/Dashboard';
 import HomePage from './pages/Home';
 import LoginPage from './pages/Login';
 import NotFoundPage from './pages/NotFound';
+import ProfilePage from './pages/Profile';
 import RegisterPage from './pages/Register';
 
 const router = createBrowserRouter([
@@ -17,6 +18,7 @@ const router = createBrowserRouter([
       { path: 'register', element: <RegisterPage /> },
       { path: 'dashboard', element: <DashboardPage /> },
       { path: 'applications', element: <ApplicationsPage /> },
+      { path: 'profile', element: <ProfilePage /> },
       { path: '*', element: <NotFoundPage /> },
     ],
   },

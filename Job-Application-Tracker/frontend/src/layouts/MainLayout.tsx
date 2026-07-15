@@ -6,6 +6,7 @@ const navItems = [
   { path: '/register', label: 'Register' },
   { path: '/dashboard', label: 'Dashboard' },
   { path: '/applications', label: 'Applications' },
+  { path: '/profile', label: 'Profile' },
 ];
 
 const MainLayout = () => {
