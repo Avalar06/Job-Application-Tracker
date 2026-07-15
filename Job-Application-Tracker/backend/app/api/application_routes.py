@@ -28,9 +28,22 @@ def list_applications(
     page: int = Query(default=1, ge=1),
     size: int = Query(default=10, ge=1, le=100),
     search: str | None = Query(default=None),
+    sort_by: str = Query(default="created_at"),
+    order: str = Query(default="desc"),
+    status: str | None = Query(default=None),
+    job_type: str | None = Query(default=None),
     db: Session = Depends(get_db),
 ) -> list[ApplicationResponse]:
-    applications = get_all_applications(db, page=page, size=size, search=search)
+    applications = get_all_applications(
+        db,
+        page=page,
+        size=size,
+        search=search,
+        sort_by=sort_by,
+        order=order,
+        status=status,
+        job_type=job_type,
+    )
     return applications
 
 

@@ -1,6 +1,7 @@
 from fastapi import HTTPException, UploadFile
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
+from sqlalchemy.sql import expression
 
 from app.models.application import Application
 from app.schemas.application import ApplicationCreate, ApplicationUpdate
@@ -22,8 +23,25 @@ def get_application(db: Session, application_id: int) -> Application:
     return application
 
 
-def get_all_applications(db: Session, page: int = 1, size: int = 10, search: str | None = None) -> list[Application]:
-    query = db.query(Application).order_by(Application.created_at.desc())
+def get_all_applications(
+    db: Session,
+    page: int = 1,
+    size: int = 10,
+    search: str | None = None,
+    sort_by: str = "created_at",
+    order: str = "desc",
+    status: str | None = None,
+    job_type: str | None = None,
+) -> list[Application]:
+    allowed_sort_fields = {"company_name", "application_date", "status", "created_at"}
+    if sort_by not in allowed_sort_fields:
+        raise HTTPException(status_code=400, detail=f"Invalid sort_by value: {sort_by}")
+
+    allowed_orders = {"asc", "desc"}
+    if order.lower() not in allowed_orders:
+        raise HTTPException(status_code=400, detail=f"Invalid order value: {order}")
+
+    query = db.query(Application)
 
     if search:
         search_term = f"%{search.strip()}%"
@@ -34,6 +52,18 @@ def get_all_applications(db: Session, page: int = 1, size: int = 10, search: str
                 Application.location.ilike(search_term),
             )
         )
+
+    if status:
+        query = query.filter(Application.status.ilike(status.strip()))
+
+    if job_type:
+        query = query.filter(Application.job_type.ilike(job_type.strip()))
+
+    sort_column = getattr(Application, sort_by)
+    if order.lower() == "desc":
+        query = query.order_by(sort_column.desc())
+    else:
+        query = query.order_by(sort_column.asc())
 
     return query.offset((page - 1) * size).limit(size).all()
 
