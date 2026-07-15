@@ -6,6 +6,7 @@ from app.services.application_service import (
     get_all_applications,
     get_application,
     update_application,
+    update_application_file,
 )
 
 __all__ = [
@@ -13,5 +14,6 @@ __all__ = [
     "get_application",
     "get_all_applications",
     "update_application",
+    "update_application_file",
     "delete_application",
 ]

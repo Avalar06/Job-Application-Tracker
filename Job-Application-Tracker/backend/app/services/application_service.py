@@ -1,10 +1,9 @@
-from typing import Any
-
-from fastapi import HTTPException
+from fastapi import HTTPException, UploadFile
 from sqlalchemy.orm import Session
 
 from app.models.application import Application
 from app.schemas.application import ApplicationCreate, ApplicationUpdate
+from app.utils.file_utils import save_uploaded_file
 
 
 def create_application(db: Session, application_data: ApplicationCreate) -> Application:
@@ -42,3 +41,24 @@ def delete_application(db: Session, application_id: int) -> None:
     application = get_application(db, application_id)
     db.delete(application)
     db.commit()
+
+
+def update_application_file(
+    db: Session,
+    application_id: int,
+    file: UploadFile,
+    folder_name: str,
+    field_name: str,
+) -> dict[str, str]:
+    application = get_application(db, application_id)
+    stored_name, relative_path = save_uploaded_file(file, folder_name, application_id)
+
+    setattr(application, field_name, stored_name)
+    db.commit()
+    db.refresh(application)
+
+    return {
+        "message": "File uploaded successfully",
+        "filename": stored_name,
+        "path": relative_path,
+    }

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, File, UploadFile, status
 from sqlalchemy.orm import Session
 
 from app.database.database import get_db
@@ -9,6 +9,7 @@ from app.services.application_service import (
     get_all_applications,
     get_application,
     update_application,
+    update_application_file,
 )
 
 router = APIRouter(prefix="/applications", tags=["Applications"])
@@ -46,3 +47,21 @@ def update_application_route(
 def delete_application_route(application_id: int, db: Session = Depends(get_db)) -> dict[str, str]:
     delete_application(db, application_id)
     return {"message": "Application deleted successfully"}
+
+
+@router.post("/{application_id}/resume", status_code=status.HTTP_201_CREATED)
+def upload_resume(
+    application_id: int,
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+) -> dict[str, str]:
+    return update_application_file(db, application_id, file, "resumes", "resume_name")
+
+
+@router.post("/{application_id}/cover-letter", status_code=status.HTTP_201_CREATED)
+def upload_cover_letter(
+    application_id: int,
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+) -> dict[str, str]:
+    return update_application_file(db, application_id, file, "cover_letters", "cover_letter_name")
