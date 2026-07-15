@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, File, UploadFile, status
+from fastapi import APIRouter, Depends, File, Query, UploadFile, status
 from sqlalchemy.orm import Session
 
 from app.database.database import get_db
@@ -24,8 +24,13 @@ def create_application_route(
 
 
 @router.get("/", response_model=list[ApplicationResponse])
-def list_applications(db: Session = Depends(get_db)) -> list[ApplicationResponse]:
-    applications = get_all_applications(db)
+def list_applications(
+    page: int = Query(default=1, ge=1),
+    size: int = Query(default=10, ge=1, le=100),
+    search: str | None = Query(default=None),
+    db: Session = Depends(get_db),
+) -> list[ApplicationResponse]:
+    applications = get_all_applications(db, page=page, size=size, search=search)
     return applications
 
 

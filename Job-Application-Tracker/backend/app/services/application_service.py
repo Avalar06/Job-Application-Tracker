@@ -1,4 +1,5 @@
 from fastapi import HTTPException, UploadFile
+from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from app.models.application import Application
@@ -21,8 +22,20 @@ def get_application(db: Session, application_id: int) -> Application:
     return application
 
 
-def get_all_applications(db: Session) -> list[Application]:
-    return db.query(Application).order_by(Application.created_at.desc()).all()
+def get_all_applications(db: Session, page: int = 1, size: int = 10, search: str | None = None) -> list[Application]:
+    query = db.query(Application).order_by(Application.created_at.desc())
+
+    if search:
+        search_term = f"%{search.strip()}%"
+        query = query.filter(
+            or_(
+                Application.company_name.ilike(search_term),
+                Application.job_title.ilike(search_term),
+                Application.location.ilike(search_term),
+            )
+        )
+
+    return query.offset((page - 1) * size).limit(size).all()
 
 
 def update_application(db: Session, application_id: int, application_data: ApplicationUpdate) -> Application:
