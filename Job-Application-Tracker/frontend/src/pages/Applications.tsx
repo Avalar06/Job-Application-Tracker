@@ -30,6 +30,10 @@ const ApplicationsPage = () => {
   const queryClient = useQueryClient();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingApplication, setEditingApplication] = useState<Application | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [sortField, setSortField] = useState<'applied_date' | 'company_name' | 'job_title' | 'status'>('applied_date');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
 
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ['applications'],
@@ -67,6 +71,29 @@ const ApplicationsPage = () => {
   });
 
   const applications = useMemo(() => data ?? [], [data]);
+
+  const filteredAndSortedApplications = useMemo(() => {
+    const normalizedQuery = searchQuery.trim().toLowerCase();
+    const filtered = applications.filter((application) => {
+      const matchesStatus = statusFilter === 'all' || application.status === statusFilter;
+      const haystacks = [application.company_name, application.job_title, application.location ?? '']
+        .join(' ')
+        .toLowerCase();
+      const matchesSearch = normalizedQuery.length === 0 || haystacks.includes(normalizedQuery);
+
+      return matchesStatus && matchesSearch;
+    });
+
+    const sorted = [...filtered].sort((left, right) => {
+      const leftValue = left[sortField] ?? '';
+      const rightValue = right[sortField] ?? '';
+
+      const compareValue = String(leftValue).localeCompare(String(rightValue), undefined, { sensitivity: 'base' });
+      return sortDirection === 'asc' ? compareValue : -compareValue;
+    });
+
+    return sorted;
+  }, [applications, searchQuery, statusFilter, sortDirection, sortField]);
 
   const openCreateModal = () => {
     setEditingApplication(null);
@@ -142,7 +169,100 @@ const ApplicationsPage = () => {
       ) : null}
 
       {!isLoading && !isError && applications.length > 0 ? (
-        <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white shadow-sm">
+        <>
+          <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+              <div className="flex-1">
+                <label className="mb-1 block text-sm font-medium text-slate-700" htmlFor="search">
+                  Search
+                </label>
+                <input
+                  id="search"
+                  value={searchQuery}
+                  onChange={(event) => setSearchQuery(event.target.value)}
+                  placeholder="Search by company, title, or location"
+                  className="w-full rounded border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-900"
+                />
+              </div>
+
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-slate-700" htmlFor="status-filter">
+                    Status
+                  </label>
+                  <select
+                    id="status-filter"
+                    value={statusFilter}
+                    onChange={(event) => setStatusFilter(event.target.value)}
+                    className="w-full rounded border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-900 sm:min-w-40"
+                  >
+                    <option value="all">All</option>
+                    <option value="applied">Applied</option>
+                    <option value="interview">Interview</option>
+                    <option value="offer">Offer</option>
+                    <option value="rejected">Rejected</option>
+                    <option value="accepted">Accepted</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-slate-700" htmlFor="sort-field">
+                    Sort By
+                  </label>
+                  <select
+                    id="sort-field"
+                    value={sortField}
+                    onChange={(event) => setSortField(event.target.value as 'applied_date' | 'company_name' | 'job_title' | 'status')}
+                    className="w-full rounded border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-900 sm:min-w-36"
+                  >
+                    <option value="applied_date">Applied Date</option>
+                    <option value="company_name">Company Name</option>
+                    <option value="job_title">Job Title</option>
+                    <option value="status">Status</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-slate-700" htmlFor="sort-direction">
+                    Direction
+                  </label>
+                  <select
+                    id="sort-direction"
+                    value={sortDirection}
+                    onChange={(event) => setSortDirection(event.target.value as 'asc' | 'desc')}
+                    className="w-full rounded border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-900 sm:min-w-36"
+                  >
+                    <option value="asc">Ascending</option>
+                    <option value="desc">Descending</option>
+                  </select>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearchQuery('');
+                    setStatusFilter('all');
+                    setSortField('applied_date');
+                    setSortDirection('desc');
+                  }}
+                  className="rounded border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700"
+                >
+                  Clear Filters
+                </button>
+              </div>
+            </div>
+
+            <div className="mt-4 flex items-center justify-between text-sm text-slate-600">
+              <p>Showing {filteredAndSortedApplications.length} Application{filteredAndSortedApplications.length === 1 ? '' : 's'}</p>
+            </div>
+          </div>
+
+          {filteredAndSortedApplications.length === 0 ? (
+            <div className="rounded-lg border border-slate-200 bg-white p-8 text-sm text-slate-600">
+              No applications match your filters.
+            </div>
+          ) : (
+            <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white shadow-sm">
           <table className="min-w-full text-left text-sm">
             <thead className="bg-slate-50 text-slate-700">
               <tr>
@@ -155,7 +275,7 @@ const ApplicationsPage = () => {
               </tr>
             </thead>
             <tbody>
-              {applications.map((application) => (
+              {filteredAndSortedApplications.map((application) => (
                 <tr key={application.id} className="border-t border-slate-200">
                   <td className="px-4 py-3">{application.company_name}</td>
                   <td className="px-4 py-3">{application.job_title}</td>
@@ -185,6 +305,8 @@ const ApplicationsPage = () => {
             </tbody>
           </table>
         </div>
+          )}
+        </>
       ) : null}
 
       {isModalOpen ? (
